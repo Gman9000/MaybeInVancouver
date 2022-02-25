@@ -57,7 +57,7 @@ public class LevelManager : MonoBehaviour
     {
         currentSpawn = newSpawn;
 
-        if (firstBoss)
+        if ((firstBoss) && (!firstBossGO.GetComponent<FirstBoss>().BattleStarted()))
         {
             firstBossGO.GetComponent<FirstBoss>().StartBattle();
         }

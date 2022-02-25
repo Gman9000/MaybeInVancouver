@@ -77,7 +77,7 @@ public class FlyingEnemy : MonoBehaviour
         //acquire the player's current position and rotate towards it, then instantiate a bullet prefab with said rotation.
         Vector3 vectorToTarget = (playerTarget.transform.position - transform.position).normalized;
         float angle = Mathf.Atan2(vectorToTarget.x, vectorToTarget.y) * Mathf.Rad2Deg;
-        Quaternion rot = Quaternion.AngleAxis(angle, Vector3.forward);
+        Quaternion rot = Quaternion.AngleAxis(-angle + 135.0f, Vector3.forward);
         GameObject projectileGO = Instantiate(projectilePrefab, transform.position, rot) as GameObject;
         projectileGO.GetComponent<Projectile>().SetDirectionAndVelocity(vectorToTarget);
         

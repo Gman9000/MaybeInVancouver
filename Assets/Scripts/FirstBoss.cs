@@ -32,7 +32,7 @@ public class FirstBoss : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
-        this.transform.Translate(1.0f * chargeSpeed * Time.deltaTime, 0f, 0f, Space.World);
+
         //if the battle has started, enough time has past since last attack and the boss isn't currently charging, make next move.
         if ((battleStarted) && (Time.time > attackTime) && (!isCharging))
         {
@@ -54,9 +54,13 @@ public class FirstBoss : MonoBehaviour
     public void StartBattle()
     {
         battleStarted = true;
-        arenaGate.SetActive(true);
+        StartCoroutine(CloseDoor());
     }
 
+    public bool BattleStarted()
+    {
+        return battleStarted;
+    }
     //Fire a single projectile at the player.
     private void ShootProjectile()
     {
@@ -64,7 +68,7 @@ public class FirstBoss : MonoBehaviour
         //acquire the player's current position and rotate towards it, then instantiate a bullet prefab with said rotation.
         Vector3 vectorToTarget = (playerTarget.transform.position - transform.position).normalized;
         float angle = Mathf.Atan2(vectorToTarget.x, vectorToTarget.y) * Mathf.Rad2Deg;
-        Quaternion rot = Quaternion.AngleAxis(angle, Vector3.forward);
+        Quaternion rot = Quaternion.AngleAxis(-angle + 315.0f, Vector3.forward);
         GameObject projectileGO = Instantiate(projectilePrefab, firePosition.transform.position, rot) as GameObject;
         projectileGO.GetComponent<Projectile>().SetDirectionAndVelocity(vectorToTarget);
         projectileGO.transform.localScale = new Vector3(2,2,2);
@@ -100,7 +104,6 @@ public class FirstBoss : MonoBehaviour
         //randomly select a target waypoint from the other side to represent eleveation.
         int targetWaypoint = Random.Range(0, 2);
 
-
         //if the target waypoint is not at the bottom, jump into the air until the desired elevation has been reached.
         if (targetWaypoint != 0)
         {
@@ -113,25 +116,26 @@ public class FirstBoss : MonoBehaviour
         }
 
         //turn off gravity for boss cube.
-        rigidBody.bodyType = RigidbodyType2D.Static;
+        rigidBody.gravityScale = 0;
         collider.isTrigger = true;
         FBanim.SetBool("isCharging", true);
         Vector3 directionOfTravel = targetWaypoints[targetWaypoint].transform.position - transform.position;
         directionOfTravel.Normalize();
 
+        rigidBody.velocity = new Vector3(directionOfTravel.x * chargeSpeed * Time.deltaTime, 0, 0);
+
         //if the target has not finished clearing the arena, move them forward.
         while (Vector2.Distance(transform.position, targetWaypoints[targetWaypoint].transform.position) > 1f)
         {
-            this.transform.Translate(
-                directionOfTravel.x * chargeSpeed * Time.deltaTime, 0, 0, Space.World);
-            
             yield return null;
         }
+
+        rigidBody.velocity = Vector3.zero;
 
         FBanim.SetBool("isCharging", true);
 
         //turn gravity back on.
-        rigidBody.bodyType = RigidbodyType2D.Dynamic;
+        rigidBody.gravityScale = 1;
 
         //turn the boss around.
         Vector3 enemyDirection = transform.localScale;
@@ -152,7 +156,7 @@ public class FirstBoss : MonoBehaviour
         isCharging = false; //set isCharging to false
         collider.isTrigger = false;
         shotCount = 0;      //set shotCount to 0.
-
+        StartCoroutine(GroundCheck());
 
 
         if (lowHP) attackTime = Time.time + attackSpeedFast;
@@ -248,5 +252,16 @@ public class FirstBoss : MonoBehaviour
         enemyDirection.x = enemyWidth;
         transform.localScale = enemyDirection;
         
+    }
+
+    private IEnumerator CloseDoor()
+    {
+        float closeTime = Time.time + 3f;
+
+        while (Time.time < closeTime)
+        {
+            arenaGate.transform.Translate(Vector3.up * 1.5f * Time.deltaTime);
+            yield return null;
+        }
     }
 }
