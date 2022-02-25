@@ -32,6 +32,7 @@ public class FirstBoss : MonoBehaviour
     // Update is called once per frame
     void FixedUpdate()
     {
+        this.transform.Translate(1.0f * chargeSpeed * Time.deltaTime, 0f, 0f, Space.World);
         //if the battle has started, enough time has past since last attack and the boss isn't currently charging, make next move.
         if ((battleStarted) && (Time.time > attackTime) && (!isCharging))
         {
@@ -123,7 +124,7 @@ public class FirstBoss : MonoBehaviour
         {
             this.transform.Translate(
                 directionOfTravel.x * chargeSpeed * Time.deltaTime, 0, 0, Space.World);
-
+            
             yield return null;
         }
 
